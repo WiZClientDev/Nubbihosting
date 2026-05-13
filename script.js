@@ -1,5 +1,7 @@
-const SUPABASE_URL = "https://vrranmkhmaycnhxnsgnn.supabase.co/rest/v1/";
-const SUPABASE_ANON_KEY = "sb_publishable_kGGyyLx8B5E2n9KxQT4V-Q_5VdhiPc1";
+const SUPABASE_URL = "https://vrranmkhmaycnhxnsgnn.supabase.co";
+
+const SUPABASE_ANON_KEY =
+  "sb_publishable_kGGyyLx8B5E2n9KxQT4V-Q_5VdhiPc1";
 
 const client = supabase.createClient(
   SUPABASE_URL,
@@ -12,6 +14,7 @@ const statusText = document.getElementById("status");
 const fileList = document.getElementById("fileList");
 
 async function loadFiles() {
+
   fileList.innerHTML = "Loading...";
 
   const { data, error } = await client
@@ -20,6 +23,7 @@ async function loadFiles() {
     .list();
 
   if (error) {
+    console.error(error);
     fileList.innerHTML = "Failed to load files.";
     return;
   }
@@ -32,12 +36,14 @@ async function loadFiles() {
   }
 
   data.forEach(file => {
+
     const { data: publicUrlData } = client
       .storage
       .from("uploads")
       .getPublicUrl(file.name);
 
     const div = document.createElement("div");
+
     div.className = "file-item";
 
     div.innerHTML = `
@@ -47,10 +53,13 @@ async function loadFiles() {
     `;
 
     fileList.appendChild(div);
+
   });
+
 }
 
 uploadBtn.addEventListener("click", async () => {
+
   const file = fileInput.files[0];
 
   if (!file) {
@@ -60,13 +69,61 @@ uploadBtn.addEventListener("click", async () => {
 
   statusText.innerText = "Uploading...";
 
-  const fileName = `${Date.now()}_${file.name}`;
+  // create unique ID
+  const id = Math.random()
+    .toString(36)
+    .substring(2, 10);
 
-  const { error } = await client
+  // file path in storage
+  const storagePath = `${id}_${file.name}`;
+
+  // upload file
+  const { error: uploadError } = await client
     .storage
     .from("uploads")
-    .upload(fileName, file);
+    .upload(storagePath, file);
 
-  if (error) {
+  if (uploadError) {
+    console.error(uploadError);
     statusText.innerText = "Upload failed.";
+    return;
+  }
+
+  // save in database
+  const { error: dbError } = await client
+    .from("files")
+    .insert([
+      {
+        id: id,
+        filename: file.name,
+        filepath: storagePath
+      }
+    ]);
+
+  if (dbError) {
+    console.error(dbError);
+    statusText.innerText = "Database save failed.";
+    return;
+  }
+
+  // create share link
+  const shareLink =
+    `${window.location.origin}/download.html?id=${id}`;
+
+  statusText.innerHTML = `
+    Upload successful!<br><br>
+
+    Share Link:<br>
+
+    <a href="${shareLink}" target="_blank">
+      ${shareLink}
+    </a>
+  `;
+
+  fileInput.value = "";
+
+  loadFiles();
+
+});
+
 loadFiles();
