@@ -1,119 +1,94 @@
-const SUPABASE_URL = "https://vrranmkhmaycnhxnsgnn.supabase.co";
+const SUPABASE_URL =
+  "https://vrranmkhmaycnhxnsgnn.supabase.co";
 
 const SUPABASE_ANON_KEY =
-  "sb_publishable_kGGyyLx8B5E2n9KxQT4V-Q_5VdhiPc1";
+  "YOUR_PUBLISHABLE_KEY";
 
 const client = supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
 
-const uploadBtn = document.getElementById("uploadBtn");
-const fileInput = document.getElementById("fileInput");
-const statusText = document.getElementById("status");
-const fileList = document.getElementById("fileList");
+const uploadBtn =
+  document.getElementById("uploadBtn");
 
-async function loadFiles() {
+const fileInput =
+  document.getElementById("fileInput");
 
-  fileList.innerHTML = "Loading...";
-
-  const { data, error } = await client
-    .storage
-    .from("uploads")
-    .list();
-
-  if (error) {
-    console.error(error);
-    fileList.innerHTML = "Failed to load files.";
-    return;
-  }
-
-  fileList.innerHTML = "";
-
-  if (data.length === 0) {
-    fileList.innerHTML = "No files uploaded yet.";
-    return;
-  }
-
-  data.forEach(file => {
-
-    const { data: publicUrlData } = client
-      .storage
-      .from("uploads")
-      .getPublicUrl(file.name);
-
-    const div = document.createElement("div");
-
-    div.className = "file-item";
-
-    div.innerHTML = `
-      <a href="${publicUrlData.publicUrl}" target="_blank">
-        ${file.name}
-      </a>
-    `;
-
-    fileList.appendChild(div);
-
-  });
-
-}
+const statusText =
+  document.getElementById("status");
 
 uploadBtn.addEventListener("click", async () => {
 
   const file = fileInput.files[0];
 
   if (!file) {
-    statusText.innerText = "Please choose a file.";
+
+    statusText.innerText =
+      "Please choose a file.";
+
     return;
   }
 
-  statusText.innerText = "Uploading...";
+  statusText.innerText =
+    "Uploading...";
 
-  // create unique ID
+  // random share ID
   const id = Math.random()
     .toString(36)
     .substring(2, 10);
 
-  // file path in storage
-  const storagePath = `${id}_${file.name}`;
+  // storage filename
+  const storagePath =
+    `${id}_${file.name}`;
 
-  // upload file
-  const { error: uploadError } = await client
-    .storage
-    .from("uploads")
-    .upload(storagePath, file);
+  // upload to storage
+  const { error: uploadError } =
+    await client.storage
+      .from("uploads")
+      .upload(storagePath, file);
 
   if (uploadError) {
+
     console.error(uploadError);
-    statusText.innerText = "Upload failed.";
+
+    statusText.innerText =
+      "Upload failed: " +
+      uploadError.message;
+
     return;
   }
 
-  // save in database
-  const { error: dbError } = await client
-    .from("files")
-    .insert([
-      {
-        id: id,
-        filename: file.name,
-        filepath: storagePath
-      }
-    ]);
+  // save metadata
+  const { error: dbError } =
+    await client
+      .from("files")
+      .insert([
+        {
+          id: id,
+          filename: file.name,
+          filepath: storagePath
+        }
+      ]);
 
   if (dbError) {
+
     console.error(dbError);
-    statusText.innerText = "Database save failed.";
+
+    statusText.innerText =
+      "Database failed: " +
+      dbError.message;
+
     return;
   }
 
-  // create share link
+  // generate share link
   const shareLink =
     `${window.location.origin}/download.html?id=${id}`;
 
   statusText.innerHTML = `
-    Upload successful!<br><br>
-
-    Share Link:<br>
+    Upload successful!
+    <br><br>
 
     <a href="${shareLink}" target="_blank">
       ${shareLink}
@@ -122,8 +97,4 @@ uploadBtn.addEventListener("click", async () => {
 
   fileInput.value = "";
 
-  loadFiles();
-
 });
-
-loadFiles();
