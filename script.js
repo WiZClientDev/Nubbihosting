@@ -37,9 +37,12 @@ dropZone.addEventListener("drop", (e) => {
 function animateProgress(target, duration) {
   const start = performance.now();
   const from = parseFloat(progressBar.style.width) || 0;
+  const progressText = document.getElementById("progressText");
   function step(now) {
     const t = Math.min((now - start) / duration, 1);
-    progressBar.style.width = (from + (target - from) * t) + "%";
+    const width = from + (target - from) * t;
+    progressBar.style.width = width + "%";
+    progressText.textContent = Math.round(width) + "%";
     if (t < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
