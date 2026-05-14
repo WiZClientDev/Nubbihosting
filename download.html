@@ -1,32 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
   <meta charset="UTF-8" />
-
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0" />
-
-  <title>Download File</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Download File - Nubbihosting</title>
   <link rel="stylesheet" href="style.css" />
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
 </head>
 <body>
 
   <div class="container">
 
-    <h1>Nubbihosting</h1>
+    <div class="logo">
+      <div class="logo-icon">&#x2601;</div>
+      <h1>Nubbihosting</h1>
+    </div>
 
-    <p id="filename">
-      Loading...
-    </p>
+    <p class="subtitle">Your file is ready</p>
 
-    <button id="downloadBtn">
-      Download
-    </button>
+    <div class="file-info">
+      <div class="file-info-label">File name</div>
+      <p id="filename">Loading...</p>
+    </div>
+
+    <button id="downloadBtn">Download File</button>
 
   </div>
 

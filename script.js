@@ -1,100 +1,121 @@
-const SUPABASE_URL =
-  "https://vrranmkhmaycnhxnsgnn.supabase.co";
+const SUPABASE_URL = "https://vrranmkhmaycnhxnsgnn.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_kGGyyLx8B5E2n9KxQT4V-Q_5VdhiPc1";
 
-const SUPABASE_ANON_KEY =
-  "sb_publishable_kGGyyLx8B5E2n9KxQT4V-Q_5VdhiPc1";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const client = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
+const uploadBtn = document.getElementById("uploadBtn");
+const fileInput = document.getElementById("fileInput");
+const statusText = document.getElementById("status");
+const fileSelected = document.getElementById("fileSelected");
+const dropZone = document.getElementById("dropZone");
+const progressWrap = document.getElementById("progressWrap");
+const progressBar = document.getElementById("progressBar");
 
-const uploadBtn =
-  document.getElementById("uploadBtn");
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0];
+  fileSelected.textContent = file ? file.name : "";
+});
 
-const fileInput =
-  document.getElementById("fileInput");
+dropZone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropZone.classList.add("drag-over");
+});
 
-const statusText =
-  document.getElementById("status");
+dropZone.addEventListener("dragleave", () => {
+  dropZone.classList.remove("drag-over");
+});
+
+dropZone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropZone.classList.remove("drag-over");
+  if (e.dataTransfer.files.length) {
+    fileInput.files = e.dataTransfer.files;
+    fileSelected.textContent = e.dataTransfer.files[0].name;
+  }
+});
+
+function animateProgress(target, duration) {
+  const start = performance.now();
+  const from = parseFloat(progressBar.style.width) || 0;
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    progressBar.style.width = (from + (target - from) * t) + "%";
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 
 uploadBtn.addEventListener("click", async () => {
-
   const file = fileInput.files[0];
 
   if (!file) {
-
-    statusText.innerText =
-      "Please choose a file.";
-
+    statusText.innerHTML = '<span class="error-text">Please choose a file first.</span>';
     return;
   }
 
-  statusText.innerText =
-    "Uploading...";
+  uploadBtn.disabled = true;
+  statusText.textContent = "Uploading...";
+  progressWrap.classList.add("visible");
+  progressBar.style.width = "0%";
+  animateProgress(40, 400);
 
-  // random share ID
-  const id = Math.random()
-    .toString(36)
-    .substring(2, 10);
+  const id = Math.random().toString(36).substring(2, 10);
+  const storagePath = `${id}_${file.name}`;
 
-  // storage filename
-  const storagePath =
-    `${id}_${file.name}`;
-
-  // upload to storage
-  const { error: uploadError } =
-    await client.storage
-      .from("uploads")
-      .upload(storagePath, file);
+  const { error: uploadError } = await client.storage
+    .from("uploads")
+    .upload(storagePath, file);
 
   if (uploadError) {
-
-    console.error(uploadError);
-
-    statusText.innerText =
-      "Upload failed: " +
-      uploadError.message;
-
+    statusText.innerHTML = '<span class="error-text">Upload failed: ' + uploadError.message + '</span>';
+    progressWrap.classList.remove("visible");
+    uploadBtn.disabled = false;
     return;
   }
 
-  // save metadata
-  const { error: dbError } =
-    await client
-      .from("files")
-      .insert([
-        {
-          id: id,
-          filename: file.name,
-          filepath: storagePath
-        }
-      ]);
+  animateProgress(80, 300);
+
+  const { error: dbError } = await client
+    .from("files")
+    .insert([{ id, filename: file.name, filepath: storagePath }]);
 
   if (dbError) {
-
-    console.error(dbError);
-
-    statusText.innerText =
-      "Database failed: " +
-      dbError.message;
-
+    statusText.innerHTML = '<span class="error-text">Save failed: ' + dbError.message + '</span>';
+    progressWrap.classList.remove("visible");
+    uploadBtn.disabled = false;
     return;
   }
 
-  // generate share link
-  const shareLink =
-    `${window.location.origin}/download.html?id=${id}`;
+  animateProgress(100, 200);
 
-  statusText.innerHTML = `
-    Upload successful!
-    <br><br>
+  const shareLink = `${window.location.origin}/download.html?id=${id}`;
 
-    <a href="${shareLink}" target="_blank">
-      ${shareLink}
-    </a>
-  `;
+  setTimeout(() => {
+    progressWrap.classList.remove("visible");
+    statusText.innerHTML = `
+      <div class="result-box">
+        <div class="result-label">Your share link</div>
+        <div class="result-link-row">
+          <a class="result-link" href="${shareLink}" target="_blank" title="${shareLink}">${shareLink}</a>
+          <button class="copy-btn" id="copyBtn">Copy</button>
+        </div>
+      </div>
+    `;
 
-  fileInput.value = "";
+    document.getElementById("copyBtn").addEventListener("click", () => {
+      navigator.clipboard.writeText(shareLink).then(() => {
+        const btn = document.getElementById("copyBtn");
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy";
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    });
 
+    fileInput.value = "";
+    fileSelected.textContent = "";
+    uploadBtn.disabled = false;
+  }, 300);
 });
