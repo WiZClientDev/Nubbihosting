@@ -3,6 +3,13 @@ const SUPABASE_ANON_KEY = "sb_publishable_kGGyyLx8B5E2n9KxQT4V-Q_5VdhiPc1";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+function formatSize(bytes) {
+  if (bytes === 0 || bytes == null) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
 const uploadBtn = document.getElementById("uploadBtn");
 const fileInput = document.getElementById("fileInput");
 const statusText = document.getElementById("status");
@@ -62,12 +69,13 @@ uploadBtn.addEventListener("click", async () => {
   progressBar.style.width = "0%";
   animateProgress(40, 400);
 
-  const id = Math.random().toString(36).substring(2, 10);
-  const storagePath = `${id}_${file.name}`;
+  const id = crypto.randomUUID().split("-")[0];
+  const ext = file.name.includes(".") ? file.name.slice(file.name.lastIndexOf(".")) : "";
+  const storagePath = `${id}${ext}`;
 
   const { error: uploadError } = await client.storage
     .from("uploads")
-    .upload(storagePath, file);
+    .upload(storagePath, file, { upsert: false });
 
   if (uploadError) {
     statusText.innerHTML = '<span class="error-text">Upload failed: ' + uploadError.message + '</span>';
@@ -80,7 +88,7 @@ uploadBtn.addEventListener("click", async () => {
 
   const { error: dbError } = await client
     .from("files")
-    .insert([{ id, filename: file.name, filepath: storagePath }]);
+    .insert([{ id, filename: file.name, filepath: storagePath, file_size: file.size, mime_type: file.type }]);
 
   if (dbError) {
     statusText.innerHTML = '<span class="error-text">Save failed: ' + dbError.message + '</span>';
@@ -95,8 +103,17 @@ uploadBtn.addEventListener("click", async () => {
 
   setTimeout(() => {
     progressWrap.classList.remove("visible");
+    const sizeLabel = formatSize(file.size);
     statusText.innerHTML = `
       <div class="result-box">
+        <div class="result-success">
+          <span class="success-check">&#x2713;</span>
+          <span>Uploaded successfully</span>
+        </div>
+        <div class="result-file">
+          <span class="result-file-name">${file.name}</span>
+          <span class="result-file-size">${sizeLabel}</span>
+        </div>
         <div class="result-label">Your share link</div>
         <div class="result-link-row">
           <a class="result-link" href="${shareLink}" target="_blank" title="${shareLink}">${shareLink}</a>

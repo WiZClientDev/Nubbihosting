@@ -21,8 +21,9 @@
 
     <div class="drop-zone" id="dropZone">
       <input type="file" id="fileInput" />
-      <div class="drop-icon">&#x1F4C2;</div>
+      <div class="drop-icon">&#x2601;</div>
       <p class="drop-label"><span>Choose a file</span> or drag it here</p>
+      <p class="drop-hint">Any file type &middot; stored securely in the cloud</p>
     </div>
 
     <p class="file-selected" id="fileSelected"></p>
@@ -30,7 +31,7 @@
     <button id="uploadBtn">Upload File</button>
 
     <div class="progress-bar-wrap" id="progressWrap">
-      <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
       <div class="progress-text" id="progressText">0%</div>
     </div>
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Download File - Nubbihosting</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='90'>☁️</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='90'>&#x2601;</text></svg>" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
@@ -17,14 +17,44 @@
       <h1>Nubbihosting</h1>
     </div>
 
-    <p class="subtitle">Your file is ready</p>
+    <p class="subtitle">Your file is ready to download</p>
 
-    <div class="file-info">
-      <div class="file-info-label">File name</div>
-      <p id="filename">Loading...</p>
+    <div class="spinner" id="spinner">
+      <div class="spinner-ring"></div>
+      <p>Loading file...</p>
     </div>
 
-    <button id="downloadBtn">Download File</button>
+    <div class="file-card" id="fileCard">
+      <div class="file-card-icon" id="fileIcon">&#x1F4C1;</div>
+      <div class="file-card-body">
+        <div class="file-card-name-row">
+          <span id="filename">Loading...</span>
+          <span class="file-badge" id="fileExt">FILE</span>
+        </div>
+        <div class="file-meta-grid">
+          <div class="meta-item">
+            <div class="meta-label">Size</div>
+            <div class="meta-value" id="fileSize">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Type</div>
+            <div class="meta-value" id="fileType">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Uploaded</div>
+            <div class="meta-value" id="fileUploaded">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Downloads</div>
+            <div class="meta-value" id="downloadsCount">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button id="downloadBtn" style="display:none;">Download File</button>
+
+    <p class="safe-note"><span>&#x1F512;</span> Files are shared via public link. Only share with people you trust.</p>
 
   </div>
 
