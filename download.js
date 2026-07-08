@@ -1,6 +1,3 @@
-const SUPABASE_URL = "https://vrranmkhmaycnhxnsgnn.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_kGGyyLx8B5E2n9KxQT4V-Q_5VdhiPc1";
-
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const params = new URLSearchParams(window.location.search);
