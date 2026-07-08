@@ -122,13 +122,16 @@ uploadBtn.addEventListener("click", async () => {
 
   // Check for duplicate link_id before uploading
   if (linkId) {
-    const { data: existing } = await client
+    const { data: existing, error: dupError } = await client
       .from("files")
       .select("id")
       .eq("link_id", linkId)
       .maybeSingle();
 
-    if (existing) {
+    if (dupError) {
+      // Schema cache might be stale; let the DB unique index catch it on insert instead
+      console.warn("Duplicate check failed, relying on DB constraint:", dupError.message);
+    } else if (existing) {
       statusText.innerHTML = '<span class="error-text">That link name is already taken. Please choose another.</span>';
       return;
     }
@@ -165,7 +168,12 @@ uploadBtn.addEventListener("click", async () => {
     .insert([insertRow]);
 
   if (dbError) {
-    statusText.innerHTML = '<span class="error-text">Save failed: ' + dbError.message + '</span>';
+    const msg = dbError.message || "";
+    if (msg.includes("link_id") || msg.includes("duplicate") || msg.includes("unique")) {
+      statusText.innerHTML = '<span class="error-text">That link name is already taken. Please choose another.</span>';
+    } else {
+      statusText.innerHTML = '<span class="error-text">Save failed: ' + msg + '</span>';
+    }
     progressWrap.classList.remove("visible");
     uploadBtn.disabled = false;
     return;

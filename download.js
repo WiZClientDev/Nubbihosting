@@ -65,6 +65,15 @@ async function loadFile() {
       .maybeSingle());
   }
 
+  // If link_id query errored (stale schema cache), fall back to id lookup
+  if (error) {
+    ({ data, error } = await client
+      .from("files")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle());
+  }
+
   if (spinner) spinner.style.display = "none";
 
   if (error || !data) {
