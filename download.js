@@ -51,11 +51,19 @@ async function loadFile() {
     return;
   }
 
-  const { data, error } = await client
+  let { data, error } = await client
     .from("files")
     .select("*")
-    .eq("id", id)
+    .eq("link_id", id)
     .maybeSingle();
+
+  if (!data && !error) {
+    ({ data, error } = await client
+      .from("files")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle());
+  }
 
   if (spinner) spinner.style.display = "none";
 

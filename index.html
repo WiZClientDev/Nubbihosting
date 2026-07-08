@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nubbihosting</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='90'>☁️</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='90'>&#x2601;</text></svg>" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="config.js"></script>
@@ -28,6 +28,26 @@
     </div>
 
     <p class="file-selected" id="fileSelected"></p>
+
+    <div class="link-options" id="linkOptions">
+      <div class="link-options-label">Link name</div>
+      <div class="link-options-row">
+        <label class="link-option">
+          <input type="radio" name="linkMode" value="auto" checked />
+          <span class="link-option-text">Auto-generated</span>
+        </label>
+        <label class="link-option">
+          <input type="radio" name="linkMode" value="filename" />
+          <span class="link-option-text">Use filename</span>
+        </label>
+        <label class="link-option">
+          <input type="radio" name="linkMode" value="custom" />
+          <span class="link-option-text">Custom</span>
+        </label>
+      </div>
+      <input type="text" id="customLinkInput" class="custom-link-input" placeholder="enter-a-custom-name" style="display:none;" />
+      <p class="link-hint" id="linkHint">A short random ID will be generated for your link.</p>
+    </div>
 
     <button id="uploadBtn">Upload File</button>
 
